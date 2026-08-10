@@ -1,98 +1,97 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type Ponto = {
+  id: string;
+  nome: string;
+  endereco: string;
+  diasHorarios: string;
+  atendimento: string;
+};
 
-export default function HomeScreen() {
+const pontosMock: Ponto[] = [
+  {
+    id: '1',
+    nome: 'Centro Comunitario Nova Esperanca',
+    endereco: 'Rua das Acacias, 210 - Bairro Nova Esperanca',
+    diasHorarios: 'Seg a Sex, 08h as 17h',
+    atendimento: 'Recebe alimentos nao pereciveis e distribui cestas basicas',
+  },
+  {
+    id: '2',
+    nome: 'Paroquia Sao Jose',
+    endereco: 'Av. Brasil, 1045 - Centro',
+    diasHorarios: 'Terca e Quinta, 13h as 18h',
+    atendimento: 'Recebe roupas infantis e distribui kits de inverno',
+  },
+  {
+    id: '3',
+    nome: 'Associacao Viver Melhor',
+    endereco: 'Rua do Comercio, 58 - Vila Uniao',
+    diasHorarios: 'Sabado, 09h as 12h',
+    atendimento: 'Recebe frutas e verduras e distribui refeicoes prontas',
+  },
+];
+
+type PontoItemProps = {
+  ponto: Ponto;
+};
+
+function PontoItem({ ponto }: PontoItemProps) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.card}>
+      <Text style={styles.nome}>{ponto.nome}</Text>
+      <Text style={styles.info}>{ponto.endereco}</Text>
+      <Text style={styles.info}>{ponto.diasHorarios}</Text>
+    </View>
+  );
+}
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+export default function TelaListaPontos() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Instituto Mao Amiga</Text>
+      <Text style={styles.subtitulo}>Pontos de coleta e distribuicao</Text>
+
+      {pontosMock.map((ponto) => (
+        <PontoItem key={ponto.id} ponto={ponto} />
+      ))}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#F4F8FC',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  titulo: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1B3A5C',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  subtitulo: {
+    fontSize: 14,
+    color: '#4C5D70',
+    marginTop: 6,
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#DCE5EE',
+  },
+  nome: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1B3A5C',
+  },
+  info: {
+    fontSize: 14,
+    color: '#4C5D70',
+    marginTop: 4,
   },
 });
