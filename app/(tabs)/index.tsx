@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { pontosMock, type Ponto } from '@/constants/pontos';
 
 type PontoItemProps = {
@@ -22,21 +22,26 @@ export default function TelaListaPontos() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Instituto Mao Amiga</Text>
-      <Text style={styles.subtitulo}>Pontos de coleta e distribuicao</Text>
+      <Text style={styles.titulo}>Instituto Mão Amiga</Text>
+      <Text style={styles.subtitulo}>Pontos de coleta e distribuição</Text>
 
-      {pontosMock.map((ponto) => (
-        <PontoItem
-          key={ponto.id}
-          ponto={ponto}
-          onPress={() =>
-            router.push({
-              pathname: '/pontos/[id]',
-              params: { id: ponto.id },
-            })
-          }
-        />
-      ))}
+      <FlatList
+        data={pontosMock}
+        keyExtractor={(ponto) => ponto.id}
+        renderItem={({ item }) => (
+          <PontoItem
+            ponto={item}
+            onPress={() =>
+              router.push({
+                pathname: '/pontos/[id]',
+                params: { id: item.id },
+              })
+            }
+          />
+        )}
+        style={styles.lista}
+        contentContainerStyle={styles.listaContent}
+      />
     </View>
   );
 }
@@ -57,6 +62,12 @@ const styles = StyleSheet.create({
     color: '#4C5D70',
     marginTop: 6,
     marginBottom: 16,
+  },
+  lista: {
+    flex: 1,
+  },
+  listaContent: {
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: '#FFFFFF',
