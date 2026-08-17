@@ -1,59 +1,41 @@
-import { StyleSheet, Text, View } from 'react-native';
-
-type Ponto = {
-  id: string;
-  nome: string;
-  endereco: string;
-  diasHorarios: string;
-  atendimento: string;
-};
-
-const pontosMock: Ponto[] = [
-  {
-    id: '1',
-    nome: 'Centro Comunitario Nova Esperanca',
-    endereco: 'Rua das Acacias, 210 - Bairro Nova Esperanca',
-    diasHorarios: 'Seg a Sex, 08h as 17h',
-    atendimento: 'Recebe alimentos nao pereciveis e distribui cestas basicas',
-  },
-  {
-    id: '2',
-    nome: 'Paroquia Sao Jose',
-    endereco: 'Av. Brasil, 1045 - Centro',
-    diasHorarios: 'Terca e Quinta, 13h as 18h',
-    atendimento: 'Recebe roupas infantis e distribui kits de inverno',
-  },
-  {
-    id: '3',
-    nome: 'Associacao Viver Melhor',
-    endereco: 'Rua do Comercio, 58 - Vila Uniao',
-    diasHorarios: 'Sabado, 09h as 12h',
-    atendimento: 'Recebe frutas e verduras e distribui refeicoes prontas',
-  },
-];
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { pontosMock, type Ponto } from '@/constants/pontos';
 
 type PontoItemProps = {
   ponto: Ponto;
+  onPress: () => void;
 };
 
-function PontoItem({ ponto }: PontoItemProps) {
+function PontoItem({ ponto, onPress }: PontoItemProps) {
   return (
-    <View style={styles.card}>
+    <Pressable style={styles.card} onPress={onPress}>
       <Text style={styles.nome}>{ponto.nome}</Text>
       <Text style={styles.info}>{ponto.endereco}</Text>
       <Text style={styles.info}>{ponto.diasHorarios}</Text>
-    </View>
+    </Pressable>
   );
 }
 
 export default function TelaListaPontos() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Instituto Mao Amiga</Text>
       <Text style={styles.subtitulo}>Pontos de coleta e distribuicao</Text>
 
       {pontosMock.map((ponto) => (
-        <PontoItem key={ponto.id} ponto={ponto} />
+        <PontoItem
+          key={ponto.id}
+          ponto={ponto}
+          onPress={() =>
+            router.push({
+              pathname: '/pontos/[id]',
+              params: { id: ponto.id },
+            })
+          }
+        />
       ))}
     </View>
   );

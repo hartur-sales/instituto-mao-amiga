@@ -1,40 +1,54 @@
+import { useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-type Ponto = {
+import { pontosMock } from '@/constants/pontos';
+
+function DetalhePonto({
+  nome,
+  endereco,
+  diasHorarios,
+  atendimento,
+}: {
   nome: string;
   endereco: string;
   diasHorarios: string;
-  recebeDistribui: string;
-};
-
-const pontoMock: Ponto = {
-  nome: 'Centro Comunitario Nova Esperanca',
-  endereco: 'Rua das Acacias, 210 - Bairro Nova Esperanca',
-  diasHorarios: 'Seg a Sex, 08h as 17h',
-  recebeDistribui: 'Recebe alimentos nao pereciveis e distribui cestas basicas',
-};
-
-function DetalhePonto({ ponto }: { ponto: Ponto }) {
+  atendimento: string;
+}) {
   return (
     <View style={styles.card}>
-      <Text style={styles.nome}>{ponto.nome}</Text>
+      <Text style={styles.nome}>{nome}</Text>
       <Text style={styles.label}>Endereco</Text>
-      <Text style={styles.valor}>{ponto.endereco}</Text>
+      <Text style={styles.valor}>{endereco}</Text>
 
       <Text style={styles.label}>Dias e horarios</Text>
-      <Text style={styles.valor}>{ponto.diasHorarios}</Text>
+      <Text style={styles.valor}>{diasHorarios}</Text>
 
       <Text style={styles.label}>Recebe e distribui</Text>
-      <Text style={styles.valor}>{ponto.recebeDistribui}</Text>
+      <Text style={styles.valor}>{atendimento}</Text>
     </View>
   );
 }
 
 export default function TelaDetalhePonto() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const ponto = pontosMock.find((item) => item.id === id);
+
+  if (!ponto) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.naoEncontrado}>Ponto nao encontrado.</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Detalhe do ponto</Text>
-      <DetalhePonto ponto={pontoMock} />
+      <DetalhePonto
+        nome={ponto.nome}
+        endereco={ponto.endereco}
+        diasHorarios={ponto.diasHorarios}
+        atendimento={ponto.atendimento}
+      />
     </View>
   );
 }
@@ -44,12 +58,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#F4F8FC',
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1B3A5C',
-    marginBottom: 16,
   },
   card: {
     backgroundColor: '#FFFFFF',
@@ -74,5 +82,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#425466',
     marginTop: 2,
+  },
+  naoEncontrado: {
+    fontSize: 16,
+    color: '#425466',
   },
 });
