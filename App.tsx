@@ -1,20 +1,38 @@
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import TelaListaPontos from './TelaListaPontos';
+import TelaDetalhePonto from './TelaDetalhePonto';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <StatusBar style="light" />
+      <Stack.Navigator
+        initialRouteName="TelaListaPontos"
+        screenOptions={{
+          headerStyle: { backgroundColor: '#121214' },
+          headerTintColor: '#00b37e',
+          headerTitleStyle: { fontWeight: 'bold', color: '#f1f1f1' },
+          contentStyle: { backgroundColor: '#121214' },
+        }}
+      >
+        <Stack.Screen
+          name="TelaListaPontos"
+          component={TelaListaPontos}
+          options={{ title: 'Pontos de Coleta' }}
+        />
+        <Stack.Screen
+          name="TelaDetalhePonto"
+          component={TelaDetalhePonto}
+          options={{ title: 'Detalhes do Ponto' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
