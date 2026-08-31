@@ -15,10 +15,10 @@ export default function App() {
       <Stack.Navigator
         initialRouteName="TelaListaPontos"
         screenOptions={{
-          headerStyle: { backgroundColor: '#121214' },
-          headerTintColor: '#00b37e',
-          headerTitleStyle: { fontWeight: 'bold', color: '#f1f1f1' },
-          contentStyle: { backgroundColor: '#121214' },
+          headerStyle: { backgroundColor: '#2563EB' },
+          headerTintColor: '#FFFFFF',
+          headerTitleStyle: { fontWeight: 'bold', color: '#FFFFFF' },
+          contentStyle: { backgroundColor: '#F5F7FA' },
         }}
       >
         <Stack.Screen
@@ -35,4 +35,3 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
