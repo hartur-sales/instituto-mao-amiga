@@ -1,20 +1,16 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {Ponto, pontoMock} from './TelaListaPontos';
+import {Ponto} from './TelaListaPontos';
 
 function PontoDetalhe({ponto}: { ponto: Ponto }) {
     return (
         <View style={styles.cardDetalhe}>
             <Text style={styles.nome}>{ponto.nome}</Text>
-
             <View style={styles.divisor}/>
-
             <Text style={styles.label}>Endereço</Text>
             <Text style={styles.endereco}>{ponto.endereco}</Text>
-
             <Text style={styles.label}>Dias e Horários</Text>
             <Text style={styles.diasHorarios}>{ponto.diasHorarios}</Text>
-
             <Text style={styles.label}>Atendimento</Text>
             <View style={styles.tagFuncionamento}>
                 <Text style={styles.funcionamento}>{ponto.funcionamento}</Text>
@@ -23,10 +19,9 @@ function PontoDetalhe({ponto}: { ponto: Ponto }) {
     );
 }
 
-function TelaDetalhePonto({route}: any) {
+function TelaDetalhePonto({route, pontos}: any) {
     const {pontoId} = route.params;
-    const ponto = pontoMock.find((item) => item.id === pontoId);
-
+    const ponto = pontos.find((item: Ponto) => item.id === pontoId);
     if (!ponto) {
         return (
             <View style={styles.container}>
@@ -34,7 +29,6 @@ function TelaDetalhePonto({route}: any) {
             </View>
         );
     }
-
     return (
         <View>
             <PontoDetalhe ponto={ponto}/>
