@@ -1,5 +1,5 @@
-import React from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useRef, useState} from 'react';
+import {FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 
 export type Ponto = {
     id: number;
@@ -68,7 +68,6 @@ export const pontoMock: Ponto[] = [
     }
 ];
 
-
 function PontoItem({ponto, onPress}: { ponto: Ponto; onPress: () => void }) {
     return (
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onPress}>
@@ -82,12 +81,64 @@ function PontoItem({ponto, onPress}: { ponto: Ponto; onPress: () => void }) {
     );
 }
 
-function TelaListaPontos({navigation}: any) {
+function TelaListaPontos({navigation, pontos, onAdicionarPonto}: any) {
+    const [nome, setNome] = useState('');
+    const [endereco, setEndereco] = useState('');
+    const [erro, setErro] = useState('');
+    const inputEnderecoRef = useRef<TextInput>(null);
+
+    function validarESalvar() {
+        if (nome.trim() === '') {
+            setErro('O nome não pode ficar vazio.');
+            return;
+        }
+        if (endereco.trim() === '') {
+            setErro('O endereço não pode ficar vazio.');
+            return;
+        }
+        onAdicionarPonto({
+            id: Date.now(),
+            nome,
+            endereco,
+            diasHorarios: 'Horário a confirmar',
+            funcionamento: 'Informações de recebimento a confirmar',
+        });
+        setNome('');
+        setEndereco('');
+        setErro('');
+        Keyboard.dismiss();
+    }
+
     return (
         <View style={styles.container}>
             <FlatList
-                data={pontoMock}
+                data={pontos}
                 keyExtractor={(item) => item.id.toString()}
+                ListHeaderComponent={
+                    <View style={styles.formulario}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Nome do ponto de coleta"
+                            value={nome}
+                            onChangeText={setNome}
+                            returnKeyType="next"
+                            onSubmitEditing={() => inputEnderecoRef.current?.focus()}
+                        />
+                        <TextInput
+                            ref={inputEnderecoRef}
+                            style={styles.input}
+                            placeholder="Endereço"
+                            value={endereco}
+                            onChangeText={setEndereco}
+                            returnKeyType="done"
+                            onSubmitEditing={validarESalvar}
+                        />
+                        {erro !== '' && <Text style={styles.erroFormulario}>{erro}</Text>}
+                        <TouchableOpacity style={styles.botao} onPress={validarESalvar}>
+                            <Text style={styles.botaoTexto}>Cadastrar ponto</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
                 renderItem={({item}) => (
                     <PontoItem
                         ponto={item}
@@ -110,6 +161,33 @@ const styles = StyleSheet.create({
     listaContainer: {
         padding: 16,
         paddingBottom: 32,
+    },
+    formulario: {
+        marginBottom: 16,
+        gap: 8,
+    },
+    input: {
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        color: '#111827',
+    },
+    erroFormulario: {
+        color: '#DC2626',
+        fontSize: 13,
+    },
+    botao: {
+        backgroundColor: '#2563EB',
+        borderRadius: 8,
+        paddingVertical: 10,
+        alignItems: 'center',
+    },
+    botaoTexto: {
+        color: '#FFFFFF',
+        fontWeight: '600',
     },
     card: {
         backgroundColor: '#FFFFFF',
