@@ -40,9 +40,23 @@ export default function App() {
                         headerRight: () => (
                             <TouchableOpacity
                                 onPress={() => navigation.navigate('TelaCadastroDoacao')}
-                                style={{ paddingHorizontal: 4, paddingVertical: 4 }}
+                                style={{
+                                    minWidth: 80,
+                                    minHeight: 44,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    padding: 8,
+                                }}
                             >
-                                <Text style={{ color: '#FFFFFF', fontWeight: '600' }}>+ Doação</Text>
+                                <Text
+                                    style={{
+                                        color: '#FFFFFF',
+                                        fontWeight: '600',
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    + Doação
+                                </Text>
                             </TouchableOpacity>
                         ),
                     })}
