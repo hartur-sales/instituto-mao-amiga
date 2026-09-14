@@ -182,12 +182,15 @@ const styles = StyleSheet.create({
     botao: {
         backgroundColor: '#2563EB',
         borderRadius: 8,
-        paddingVertical: 10,
         alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 44,
+        minHeight: 44,
     },
     botaoTexto: {
         color: '#FFFFFF',
         fontWeight: '600',
+        textAlign: 'center',
     },
     card: {
         backgroundColor: '#FFFFFF',
