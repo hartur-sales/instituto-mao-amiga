@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {FlatList, Keyboard, StyleSheet, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
 import {Ponto} from './TelaListaPontos';
 
@@ -87,7 +87,9 @@ function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}: any) {
     }
 
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+        behavior = {Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}>
             <FlatList
                 data={doacoes}
                 keyExtractor={(item) => item.id.toString()}
@@ -145,7 +147,7 @@ function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}: any) {
                 )}
                 contentContainerStyle={styles.listaContainer}
             />
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
@@ -196,13 +198,16 @@ const styles = StyleSheet.create({
     botao: {
         backgroundColor: '#2563EB',
         borderRadius: 8,
-        paddingVertical: 10,
         alignItems: 'center',
-        marginTop: 8,
+        justifyContent: 'center',
+        minWidth: 44,
+        minHeight: 44,
     },
+
     botaoTexto: {
         color: '#FFFFFF',
         fontWeight: '600',
+        textAlign: 'center',
     },
     subtitulo: {
         fontSize: 16,
