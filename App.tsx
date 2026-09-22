@@ -1,24 +1,36 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, TouchableOpacity } from 'react-native';
 import TelaListaPontos, {pontoMock, Ponto} from './TelaListaPontos';
 import TelaDetalhePonto from './TelaDetalhePonto';
 import TelaCadastroDoacao, {Doacao} from './TelaCadastroDoacao';
 
 const Stack = createNativeStackNavigator();
+const CHAVE_DOACOES = '@pontos_coleta:doacoes';
 
 export default function App() {
     const [pontos, setPontos] = useState<Ponto[]>(pontoMock);
     const [doacoes, setDoacoes] = useState<Doacao[]>([]);
+
+    useEffect(() => {
+        AsyncStorage.getItem(CHAVE_DOACOES).then((salvo) => {
+            if (salvo) setDoacoes(JSON.parse(salvo));
+        });
+    }, []);
 
     function adicionarPonto(ponto: Ponto) {
         setPontos((atual) => [...atual, ponto]);
     }
 
     function adicionarDoacao(doacao: Doacao) {
-        setDoacoes((atual) => [...atual, doacao]);
+        setDoacoes((atual) => {
+            const novo = [...atual, doacao];
+            AsyncStorage.setItem(CHAVE_DOACOES, JSON.stringify(novo));
+            return novo;
+        });
     }
 
     return (
