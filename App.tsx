@@ -1,24 +1,24 @@
 import React, {useEffect, useState} from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, TouchableOpacity } from 'react-native';
-import TelaListaPontos, {pontoMock, Ponto} from './TelaListaPontos';
-import TelaDetalhePonto from './TelaDetalhePonto';
-import TelaCadastroDoacao, {Doacao} from './TelaCadastroDoacao';
+import {StatusBar} from 'expo-status-bar';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {Text, TouchableOpacity} from 'react-native';
+import TelaListaPontos from './src/screens/TelaListaPontos';
+import TelaDetalhePonto from './src/screens/TelaDetalhePonto';
+import TelaCadastroDoacao from './src/screens/TelaCadastroDoacao';
+import {Ponto} from './src/entities/ponto';
+import {Doacao} from './src/entities/doacao';
+import {pontosMock} from './src/mockdata/pontosMock';
+import {listarDoacoes, salvarDoacao} from './src/services/doacoesStorage';
+import {colors} from './src/theme';
 
 const Stack = createNativeStackNavigator();
-const CHAVE_DOACOES = '@pontos_coleta:doacoes';
-
 export default function App() {
-    const [pontos, setPontos] = useState<Ponto[]>(pontoMock);
+    const [pontos, setPontos] = useState<Ponto[]>(pontosMock);
     const [doacoes, setDoacoes] = useState<Doacao[]>([]);
 
     useEffect(() => {
-        AsyncStorage.getItem(CHAVE_DOACOES).then((salvo) => {
-            if (salvo) setDoacoes(JSON.parse(salvo));
-        });
+        listarDoacoes().then(setDoacoes);
     }, []);
 
     function adicionarPonto(ponto: Ponto) {
@@ -26,11 +26,7 @@ export default function App() {
     }
 
     function adicionarDoacao(doacao: Doacao) {
-        setDoacoes((atual) => {
-            const novo = [...atual, doacao];
-            AsyncStorage.setItem(CHAVE_DOACOES, JSON.stringify(novo));
-            return novo;
-        });
+        salvarDoacao(doacao).then(setDoacoes);
     }
 
     return (
@@ -39,10 +35,10 @@ export default function App() {
             <Stack.Navigator
                 initialRouteName="TelaListaPontos"
                 screenOptions={{
-                    headerStyle: { backgroundColor: '#2563EB' },
-                    headerTintColor: '#FFFFFF',
-                    headerTitleStyle: { fontWeight: 'bold', color: '#FFFFFF' },
-                    contentStyle: { backgroundColor: '#F5F7FA' },
+                    headerStyle: {backgroundColor: colors.primary},
+                    headerTintColor: colors.surface,
+                    headerTitleStyle: {fontWeight: 'bold', color: colors.surface},
+                    contentStyle: {backgroundColor: colors.background},
                 }}
             >
                 <Stack.Screen
@@ -62,7 +58,7 @@ export default function App() {
                             >
                                 <Text
                                     style={{
-                                        color: '#FFFFFF',
+                                        color: colors.surface,
                                         fontWeight: '600',
                                         textAlign: 'center',
                                     }}
@@ -94,4 +90,3 @@ export default function App() {
         </NavigationContainer>
     );
 }
-
