@@ -8,23 +8,24 @@ import TelaDetalhePonto from './src/screens/TelaDetalhePonto';
 import TelaCadastroDoacao from './src/screens/TelaCadastroDoacao';
 import {Ponto} from './src/entities/ponto';
 import {Doacao} from './src/entities/doacao';
-import {pontosMock} from './src/mockdata/pontosMock';
-import {listarDoacoes, salvarDoacao} from './src/services/doacoesStorage';
+import {listarPontos, salvarPonto} from './src/services/pontosStorage';
 import {colors} from './src/theme';
+import {listarDoacoes, salvarDoacao} from "./src/services/doacoesStorage";
 
 const Stack = createNativeStackNavigator();
 export default function App() {
-    const [pontos, setPontos] = useState<Ponto[]>(pontosMock);
+    const [pontos, setPontos] = useState<Ponto[]>([]);   // era useState(pontosMock)
     const [doacoes, setDoacoes] = useState<Doacao[]>([]);
 
     useEffect(() => {
+        listarPontos().then(setPontos);                  // linha nova
         listarDoacoes().then(setDoacoes);
     }, []);
 
-    function adicionarPonto(ponto: Ponto) {
-        setPontos((atual) => [...atual, ponto]);
-    }
 
+    function adicionarPonto(ponto: Ponto) {
+        salvarPonto(ponto).then(setPontos);              // era setPontos((atual) => [...atual, ponto])
+    }
     function adicionarDoacao(doacao: Doacao) {
         salvarDoacao(doacao).then(setDoacoes);
     }
