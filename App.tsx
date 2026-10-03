@@ -14,17 +14,17 @@ import {listarDoacoes, salvarDoacao} from "./src/services/doacoesStorage";
 
 const Stack = createNativeStackNavigator();
 export default function App() {
-    const [pontos, setPontos] = useState<Ponto[]>([]);   // era useState(pontosMock)
+    const [pontos, setPontos] = useState<Ponto[]>([]);
     const [doacoes, setDoacoes] = useState<Doacao[]>([]);
 
     useEffect(() => {
-        listarPontos().then(setPontos);                  // linha nova
+        listarPontos().then(setPontos);
         listarDoacoes().then(setDoacoes);
     }, []);
 
 
     function adicionarPonto(ponto: Ponto) {
-        salvarPonto(ponto).then(setPontos);              // era setPontos((atual) => [...atual, ponto])
+        salvarPonto(ponto).then(setPontos);
     }
     function adicionarDoacao(doacao: Doacao) {
         salvarDoacao(doacao).then(setDoacoes);
