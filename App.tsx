@@ -1,36 +1,32 @@
 import React, {useEffect, useState} from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Text, TouchableOpacity } from 'react-native';
-import TelaListaPontos, {pontoMock, Ponto} from './TelaListaPontos';
-import TelaDetalhePonto from './TelaDetalhePonto';
-import TelaCadastroDoacao, {Doacao} from './TelaCadastroDoacao';
+import {StatusBar} from 'expo-status-bar';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import TelaListaPontos from './src/screens/TelaListaPontos';
+import TelaDetalhePonto from './src/screens/TelaDetalhePonto';
+import TelaCadastroDoacao from './src/screens/TelaCadastroDoacao';
+import {Ponto} from './src/entities/ponto';
+import {Doacao, NovaDoacao} from './src/entities/doacao';
+import {listarPontos, salvarPonto} from './src/services/pontosStorage';
+import {colors} from './src/theme';
+import {listarDoacoes, salvarDoacao} from "./src/services/doacoesStorage";
 
 const Stack = createNativeStackNavigator();
-const CHAVE_DOACOES = '@pontos_coleta:doacoes';
-
 export default function App() {
-    const [pontos, setPontos] = useState<Ponto[]>(pontoMock);
+    const [pontos, setPontos] = useState<Ponto[]>([]);
     const [doacoes, setDoacoes] = useState<Doacao[]>([]);
 
     useEffect(() => {
-        AsyncStorage.getItem(CHAVE_DOACOES).then((salvo) => {
-            if (salvo) setDoacoes(JSON.parse(salvo));
-        });
+        listarPontos().then(setPontos);
+        listarDoacoes().then(setDoacoes);
     }, []);
 
-    function adicionarPonto(ponto: Ponto) {
-        setPontos((atual) => [...atual, ponto]);
-    }
 
-    function adicionarDoacao(doacao: Doacao) {
-        setDoacoes((atual) => {
-            const novo = [...atual, doacao];
-            AsyncStorage.setItem(CHAVE_DOACOES, JSON.stringify(novo));
-            return novo;
-        });
+    function adicionarPonto(ponto: Ponto) {
+        salvarPonto(ponto).then(setPontos);
+    }
+    function adicionarDoacao(doacao: NovaDoacao) {
+        salvarDoacao(doacao).then(setDoacoes);
     }
 
     return (
@@ -39,39 +35,15 @@ export default function App() {
             <Stack.Navigator
                 initialRouteName="TelaListaPontos"
                 screenOptions={{
-                    headerStyle: { backgroundColor: '#2563EB' },
-                    headerTintColor: '#FFFFFF',
-                    headerTitleStyle: { fontWeight: 'bold', color: '#FFFFFF' },
-                    contentStyle: { backgroundColor: '#F5F7FA' },
+                    headerStyle: {backgroundColor: colors.primary},
+                    headerTintColor: colors.surface,
+                    headerTitleStyle: {fontWeight: 'bold', color: colors.surface},
+                    contentStyle: {backgroundColor: colors.background},
                 }}
             >
                 <Stack.Screen
                     name="TelaListaPontos"
-                    options={({ navigation }) => ({
-                        title: 'Pontos de Coleta',
-                        headerRight: () => (
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('TelaCadastroDoacao')}
-                                style={{
-                                    minWidth: 80,
-                                    minHeight: 44,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 8,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        color: '#FFFFFF',
-                                        fontWeight: '600',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    + Doação
-                                </Text>
-                            </TouchableOpacity>
-                        ),
-                    })}
+                    options={{title: 'Pontos de Coleta'}}
                 >
                     {(props) => (
                         <TelaListaPontos {...props} pontos={pontos} onAdicionarPonto={adicionarPonto} />
@@ -94,4 +66,3 @@ export default function App() {
         </NavigationContainer>
     );
 }
-
