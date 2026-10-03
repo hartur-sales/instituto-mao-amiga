@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 import {FlatList, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {Picker} from '@react-native-picker/picker';
-import {Doacao} from '../entities/doacao';
+import {Doacao, NovaDoacao} from '../entities/doacao';
 import {Ponto} from '../entities/ponto';
 import {DoacaoCard} from '../components/DoacaoCard';
 import {colors, spacing} from '../theme';
 
-type Props = {pontos: Ponto[]; doacoes: Doacao[]; onAdicionarDoacao: (doacao: Doacao) => void};
+type Props = {pontos: Ponto[]; doacoes: Doacao[]; onAdicionarDoacao: (doacao: NovaDoacao) => void};
 
 export default function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}: Props) {
     const [tipoItem, setTipoItem] = useState('');
@@ -25,7 +25,6 @@ export default function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}:
             return;
         }
         onAdicionarDoacao({
-            id: Date.now(),
             tipoItem: tipoItem.trim(),
             quantidade: quantidadeNumerica,
             pontoDestinoId: Number(pontoDestinoId),

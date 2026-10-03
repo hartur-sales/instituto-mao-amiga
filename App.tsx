@@ -2,12 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {StatusBar} from 'expo-status-bar';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {Text, TouchableOpacity} from 'react-native';
 import TelaListaPontos from './src/screens/TelaListaPontos';
 import TelaDetalhePonto from './src/screens/TelaDetalhePonto';
 import TelaCadastroDoacao from './src/screens/TelaCadastroDoacao';
 import {Ponto} from './src/entities/ponto';
-import {Doacao} from './src/entities/doacao';
+import {Doacao, NovaDoacao} from './src/entities/doacao';
 import {listarPontos, salvarPonto} from './src/services/pontosStorage';
 import {colors} from './src/theme';
 import {listarDoacoes, salvarDoacao} from "./src/services/doacoesStorage";
@@ -26,7 +25,7 @@ export default function App() {
     function adicionarPonto(ponto: Ponto) {
         salvarPonto(ponto).then(setPontos);
     }
-    function adicionarDoacao(doacao: Doacao) {
+    function adicionarDoacao(doacao: NovaDoacao) {
         salvarDoacao(doacao).then(setDoacoes);
     }
 
@@ -44,31 +43,7 @@ export default function App() {
             >
                 <Stack.Screen
                     name="TelaListaPontos"
-                    options={({ navigation }) => ({
-                        title: 'Pontos de Coleta',
-                        headerRight: () => (
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate('TelaCadastroDoacao')}
-                                style={{
-                                    minWidth: 80,
-                                    minHeight: 44,
-                                    justifyContent: 'center',
-                                    alignItems: 'center',
-                                    padding: 8,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        color: colors.surface,
-                                        fontWeight: '600',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    + Doação
-                                </Text>
-                            </TouchableOpacity>
-                        ),
-                    })}
+                    options={{title: 'Pontos de Coleta'}}
                 >
                     {(props) => (
                         <TelaListaPontos {...props} pontos={pontos} onAdicionarPonto={adicionarPonto} />

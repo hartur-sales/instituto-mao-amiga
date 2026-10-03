@@ -76,13 +76,22 @@ export default function TelaListaPontos({navigation, pontos, onAdicionarPonto}: 
                 )}
                 contentContainerStyle={styles.lista}
             />
+            <TouchableOpacity
+                accessibilityLabel="Adicionar doação"
+                accessibilityRole="button"
+                accessibilityHint="Abre o formulário para registrar uma doação"
+                style={styles.botaoFlutuante}
+                onPress={() => navigation.navigate('TelaCadastroDoacao')}
+            >
+                <Text style={styles.botaoFlutuanteTexto}>+</Text>
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1, backgroundColor: colors.background},
-    lista: {padding: spacing.lg, paddingBottom: 32},
+    lista: {padding: spacing.lg, paddingBottom: 104},
     formulario: {marginBottom: spacing.lg, gap: spacing.sm},
     input: {
         backgroundColor: colors.surface,
@@ -102,4 +111,26 @@ const styles = StyleSheet.create({
         minHeight: 44,
     },
     botaoTexto: {color: colors.surface, fontWeight: '600'},
+    botaoFlutuante: {
+        position: 'absolute',
+        right: spacing.lg,
+        bottom: spacing.lg,
+        width: 58,
+        height: 58,
+        borderRadius: 29,
+        backgroundColor: colors.primary,
+        alignItems: 'center',
+        justifyContent: 'center',
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 3},
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+    },
+    botaoFlutuanteTexto: {
+        color: colors.surface,
+        fontSize: 32,
+        fontWeight: '300',
+        lineHeight: 34,
+    },
 });
