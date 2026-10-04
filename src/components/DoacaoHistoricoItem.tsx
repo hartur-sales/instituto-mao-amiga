@@ -1,23 +1,24 @@
 import React, {memo} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {Pressable, StyleSheet, Text, View} from 'react-native';
 import {Doacao} from '../entities/doacao';
 import {colors, spacing} from '../theme';
 
 type Props = {
     doacao: Doacao;
     nomePonto: string;
+    onPress: () => void;
 };
 
-function DoacaoHistoricoItem({doacao, nomePonto}: Props) {
+function DoacaoHistoricoItem({doacao, nomePonto, onPress}: Props) {
     const data = new Date(doacao.criadoEm).toLocaleString('pt-BR');
 
     return (
-        <View style={styles.card}>
+        <Pressable style={styles.card} onPress={onPress} accessibilityRole="button">
             <Text style={styles.tipoItem}>{doacao.tipoItem}</Text>
             <Text style={styles.detalhe}>Quantidade: {doacao.quantidade}</Text>
             <Text style={styles.detalhe}>Destino: {nomePonto}</Text>
             <Text style={styles.data}>Registrada em {data}</Text>
-        </View>
+        </Pressable>
     );
 }
 

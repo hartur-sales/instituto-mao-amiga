@@ -3,6 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import TelaCadastroDoacao from '../screens/TelaCadastroDoacao';
 import TelaDetalhePonto from '../screens/TelaDetalhePonto';
+import TelaDetalheDoacao from '../screens/TelaDetalheDoacao';
 import TelaHistoricoDoacoes from '../screens/TelaHistoricoDoacoes';
 import TelaListaPontos from '../screens/TelaListaPontos';
 import {Doacao, NovaDoacao} from '../entities/doacao';
@@ -10,16 +11,31 @@ import {Ponto} from '../entities/ponto';
 import HeaderButton from '../components/HeaderButton';
 import {colors} from '../theme';
 
+export type RootStackParamList = {
+    TelaListaPontos: undefined;
+    TelaDetalhePonto: {pontoId: number};
+    TelaCadastroDoacao: undefined;
+    TelaDetalheDoacao: {doacao: Doacao};
+    TelaHistoricoDoacoes: undefined;
+};
+
 type Props = {
     pontos: Ponto[];
     doacoes: Doacao[];
     onAdicionarPonto: (ponto: Ponto) => void;
     onAdicionarDoacao: (doacao: NovaDoacao) => void;
+    onRemoverDoacao: (id: number) => void;
 };
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function AppNavigator({pontos, doacoes, onAdicionarPonto, onAdicionarDoacao}: Props) {
+export default function AppNavigator({
+    pontos,
+    doacoes,
+    onAdicionarPonto,
+    onAdicionarDoacao,
+    onRemoverDoacao,
+}: Props) {
     return (
         <NavigationContainer>
             <Stack.Navigator
@@ -37,7 +53,7 @@ export default function AppNavigator({pontos, doacoes, onAdicionarPonto, onAdici
                         title: 'Pontos de Coleta',
                         headerRight: () => (
                             <HeaderButton
-                                title="Minhas doações"
+                                title="Doações"
                                 onPress={() => navigation.navigate('TelaHistoricoDoacoes')}
                             />
                         ),
@@ -50,7 +66,18 @@ export default function AppNavigator({pontos, doacoes, onAdicionarPonto, onAdici
                 <Stack.Screen name="TelaDetalhePonto" options={{title: 'Detalhes do Ponto'}}>
                     {(props) => <TelaDetalhePonto {...props} pontos={pontos} />}
                 </Stack.Screen>
-                <Stack.Screen name="TelaCadastroDoacao" options={{title: 'Cadastro de Doação'}}>
+                <Stack.Screen
+                    name="TelaCadastroDoacao"
+                    options={({navigation}) => ({
+                        title: 'Cadastro de Doação',
+                        headerRight: () => (
+                            <HeaderButton
+                                title="Doações"
+                                onPress={() => navigation.navigate('TelaHistoricoDoacoes')}
+                            />
+                        ),
+                    })}
+                >
                     {(props) => (
                         <TelaCadastroDoacao
                             {...props}
@@ -60,10 +87,19 @@ export default function AppNavigator({pontos, doacoes, onAdicionarPonto, onAdici
                         />
                     )}
                 </Stack.Screen>
+                <Stack.Screen name="TelaDetalheDoacao" options={{title: 'Detalhe da Doação'}}>
+                    {(props) => (
+                        <TelaDetalheDoacao
+                            {...props}
+                            nomePonto={pontos.find((ponto) => ponto.id === props.route.params.doacao.pontoDestinoId)?.nome ?? 'Ponto não encontrado'}
+                            onExcluir={onRemoverDoacao}
+                        />
+                    )}
+                </Stack.Screen>
                 <Stack.Screen
                     name="TelaHistoricoDoacoes"
                     options={({navigation}) => ({
-                        title: 'Minhas doações',
+                        title: 'Doações',
                         headerRight: () => (
                             <HeaderButton
                                 title="Pontos"
