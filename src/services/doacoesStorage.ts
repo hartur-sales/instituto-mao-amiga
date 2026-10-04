@@ -24,3 +24,10 @@ export async function salvarDoacao(novaDoacao: NovaDoacao): Promise<Doacao[]> {
     await AsyncStorage.setItem(CHAVE_DOACOES, JSON.stringify(doacoes));
     return doacoes;
 }
+
+export async function excluirDoacao(id: number): Promise<Doacao[]> {
+    const doacoes = await listarDoacoes();
+    const doacoesAtualizadas = doacoes.filter((doacao) => doacao.id !== id);
+    await AsyncStorage.setItem(CHAVE_DOACOES, JSON.stringify(doacoesAtualizadas));
+    return doacoesAtualizadas;
+}

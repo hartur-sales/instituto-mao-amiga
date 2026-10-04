@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Doacao, NovaDoacao} from '../entities/doacao';
 import {Ponto} from '../entities/ponto';
-import {listarDoacoes, salvarDoacao} from '../services/doacoesStorage';
+import {excluirDoacao, listarDoacoes, salvarDoacao} from '../services/doacoesStorage';
 import {listarPontos, salvarPonto} from '../services/pontosStorage';
 
 export function useAppData() {
@@ -23,5 +23,9 @@ export function useAppData() {
         salvarDoacao(doacao).then(setDoacoes);
     }
 
-    return {pontos, doacoes, adicionarPonto, adicionarDoacao};
+    function removerDoacao(id: number) {
+        excluirDoacao(id).then(setDoacoes);
+    }
+
+    return {pontos, doacoes, adicionarPonto, adicionarDoacao, removerDoacao};
 }

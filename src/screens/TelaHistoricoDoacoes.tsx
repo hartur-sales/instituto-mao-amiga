@@ -21,6 +21,7 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
                     <DoacaoHistoricoItem
                         doacao={item}
                         nomePonto={pontos.find((ponto) => ponto.id === item.pontoDestinoId)?.nome ?? 'Ponto não encontrado'}
+                        onPress={() => navigation.navigate('TelaDetalheDoacao', {doacao: item})}
                     />
                 )}
                 contentContainerStyle={doacoes.length ? styles.lista : styles.listaVazia}
