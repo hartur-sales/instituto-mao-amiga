@@ -12,6 +12,7 @@ import {
 import {Doacao} from '../entities/doacao';
 import {Ponto} from '../entities/ponto';
 import DoacaoHistoricoItem from '../components/DoacaoHistoricoItem';
+import ResumoDoacoes, {ResumoDoacao} from '../components/ResumoDoacoes';
 import {colors, spacing} from '../theme';
 
 type Props = {
@@ -26,6 +27,28 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
         const termo = busca.trim().toLocaleLowerCase();
         return doacoes.filter((doacao) => doacao.tipoItem.toLocaleLowerCase().includes(termo));
     }, [busca, doacoes]);
+    const resumo = useMemo<ResumoDoacao[]>(() => {
+        const porTipo = new Map<string, ResumoDoacao>();
+
+        doacoes.forEach((doacao) => {
+            const tipoItem = doacao.tipoItem.trim();
+            const atual = porTipo.get(tipoItem) ?? {
+                tipoItem,
+                quantidadeTotal: 0,
+                quantidadeDoacoes: 0,
+            };
+
+            porTipo.set(tipoItem, {
+                tipoItem,
+                quantidadeTotal: atual.quantidadeTotal + doacao.quantidade,
+                quantidadeDoacoes: atual.quantidadeDoacoes + 1,
+            });
+        });
+
+        return Array.from(porTipo.values()).sort(
+            (a, b) => b.quantidadeTotal - a.quantidadeTotal || a.tipoItem.localeCompare(b.tipoItem),
+        );
+    }, [doacoes]);
 
     const nenhumaDoacao = doacoes.length === 0;
 
@@ -34,6 +57,7 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
         >
+            <ResumoDoacoes totalDoacoes={doacoes.length} resumo={resumo} />
             <TextInput
                 style={styles.busca}
                 placeholder="Buscar por tipo de item"
