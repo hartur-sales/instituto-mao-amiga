@@ -6,12 +6,28 @@ import {Ponto} from '../entities/ponto';
 import {DoacaoCard} from '../components/DoacaoCard';
 import {colors, spacing} from '../theme';
 
-type Props = {pontos: Ponto[]; doacoes: Doacao[]; onAdicionarDoacao: (doacao: NovaDoacao) => void};
+type Props = {
+    navigation: any;
+    route: {params?: {doacao?: Doacao}};
+    pontos: Ponto[];
+    doacoes: Doacao[];
+    onAdicionarDoacao: (doacao: NovaDoacao) => void;
+    onEditarDoacao: (doacao: Doacao) => Promise<Doacao[]>;
+};
 
-export default function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}: Props) {
-    const [tipoItem, setTipoItem] = useState('');
-    const [quantidade, setQuantidade] = useState('');
-    const [pontoDestinoId, setPontoDestinoId] = useState('');
+export default function TelaCadastroDoacao({
+    navigation,
+    route,
+    pontos,
+    doacoes,
+    onAdicionarDoacao,
+    onEditarDoacao,
+}: Props) {
+    const doacaoEmEdicao = route.params?.doacao;
+    const editando = !!doacaoEmEdicao;
+    const [tipoItem, setTipoItem] = useState(doacaoEmEdicao?.tipoItem ?? '');
+    const [quantidade, setQuantidade] = useState(doacaoEmEdicao?.quantidade.toString() ?? '');
+    const [pontoDestinoId, setPontoDestinoId] = useState(doacaoEmEdicao?.pontoDestinoId.toString() ?? '');
     const [erro, setErro] = useState('');
 
     function validarESalvar() {
@@ -24,14 +40,24 @@ export default function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}:
             setErro('A quantidade deve ser um número inteiro maior que zero.');
             return;
         }
-        onAdicionarDoacao({
+        const dados = {
             tipoItem: tipoItem.trim(),
             quantidade: quantidadeNumerica,
             pontoDestinoId: Number(pontoDestinoId),
-        });
-        setTipoItem('');
-        setQuantidade('');
-        setPontoDestinoId('');
+        };
+        if (doacaoEmEdicao) {
+            onEditarDoacao({...doacaoEmEdicao, ...dados}).then((doacoesAtualizadas) => {
+                const doacaoAtualizada = doacoesAtualizadas.find((doacao) => doacao.id === doacaoEmEdicao.id);
+                if (doacaoAtualizada) {
+                    navigation.navigate('TelaDetalheDoacao', {doacao: doacaoAtualizada});
+                }
+            });
+        } else {
+            onAdicionarDoacao(dados);
+            setTipoItem('');
+            setQuantidade('');
+            setPontoDestinoId('');
+        }
         setErro('');
         Keyboard.dismiss();
     }
@@ -56,8 +82,13 @@ export default function TelaCadastroDoacao({pontos, doacoes, onAdicionarDoacao}:
                         </View>
                         {!!erro && <Text style={styles.erro}>{erro}</Text>}
                         <TouchableOpacity style={styles.botao} onPress={validarESalvar}>
-                            <Text style={styles.botaoTexto}>Registrar doação</Text>
+                            <Text style={styles.botaoTexto}>{editando ? 'Salvar alterações' : 'Registrar doação'}</Text>
                         </TouchableOpacity>
+                        {editando && (
+                            <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
+                                <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 }
                 renderItem={({item}) => (
@@ -82,4 +113,6 @@ const styles = StyleSheet.create({
     erro: {color: colors.error, fontSize: 13},
     botao: {backgroundColor: colors.primary, borderRadius: spacing.sm, alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm},
     botaoTexto: {color: colors.surface, fontWeight: '600'},
+    botaoCancelar: {alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm},
+    botaoCancelarTexto: {color: colors.textSecondary, fontWeight: '600'},
 });
