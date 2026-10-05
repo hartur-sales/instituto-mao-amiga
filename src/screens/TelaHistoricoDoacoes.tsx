@@ -1,5 +1,14 @@
-import React from 'react';
-import {FlatList, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useMemo, useState} from 'react';
+import {
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import {Doacao} from '../entities/doacao';
 import {Ponto} from '../entities/ponto';
 import DoacaoHistoricoItem from '../components/DoacaoHistoricoItem';
@@ -12,10 +21,29 @@ type Props = {
 };
 
 export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Props) {
+    const [busca, setBusca] = useState('');
+    const doacoesFiltradas = useMemo(() => {
+        const termo = busca.trim().toLocaleLowerCase();
+        return doacoes.filter((doacao) => doacao.tipoItem.toLocaleLowerCase().includes(termo));
+    }, [busca, doacoes]);
+
+    const nenhumaDoacao = doacoes.length === 0;
+
     return (
-        <View style={styles.container}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.container}
+        >
+            <TextInput
+                style={styles.busca}
+                placeholder="Buscar por tipo de item"
+                value={busca}
+                onChangeText={setBusca}
+                returnKeyType="search"
+                accessibilityLabel="Filtrar doações por tipo de item"
+            />
             <FlatList
-                data={doacoes}
+                data={doacoesFiltradas}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({item}) => (
                     <DoacaoHistoricoItem
@@ -24,12 +52,18 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
                         onPress={() => navigation.navigate('TelaDetalheDoacao', {doacao: item})}
                     />
                 )}
-                contentContainerStyle={doacoes.length ? styles.lista : styles.listaVazia}
+                contentContainerStyle={doacoesFiltradas.length ? styles.lista : styles.listaVazia}
                 ListEmptyComponent={
                     <View style={styles.vazio}>
-                        <Text style={styles.mensagem}>Você ainda não registrou nenhuma doação.</Text>
+                        <Text style={styles.mensagem}>
+                            {nenhumaDoacao
+                                ? 'Você ainda não registrou nenhuma doação.'
+                                : `Nenhuma doação encontrada para "${busca}".`}
+                        </Text>
                     </View>
                 }
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
             />
             <TouchableOpacity
                 accessibilityLabel="Adicionar doação"
@@ -40,14 +74,24 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
             >
                 <Text style={styles.botaoFlutuanteTexto}>+</Text>
             </TouchableOpacity>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1, backgroundColor: colors.background},
-    lista: {padding: spacing.lg, paddingBottom: 32},
-    listaVazia: {flexGrow: 1, padding: spacing.lg},
+    busca: {
+        backgroundColor: colors.surface,
+        borderColor: colors.border,
+        borderRadius: spacing.sm,
+        borderWidth: 1,
+        color: colors.text,
+        margin: spacing.lg,
+        paddingHorizontal: spacing.md,
+        paddingVertical: 10,
+    },
+    lista: {paddingHorizontal: spacing.lg, paddingBottom: 104},
+    listaVazia: {flexGrow: 1, padding: spacing.lg, paddingBottom: 104},
     vazio: {flex: 1, alignItems: 'center', justifyContent: 'center'},
     mensagem: {fontSize: 16, color: colors.text, textAlign: 'center', marginBottom: spacing.lg},
     botaoFlutuante: {
