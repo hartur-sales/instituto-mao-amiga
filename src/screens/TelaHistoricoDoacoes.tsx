@@ -28,15 +28,18 @@ export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Prop
                 ListEmptyComponent={
                     <View style={styles.vazio}>
                         <Text style={styles.mensagem}>Você ainda não registrou nenhuma doação.</Text>
-                        <TouchableOpacity
-                            style={styles.botao}
-                            onPress={() => navigation.navigate('TelaCadastroDoacao')}
-                        >
-                            <Text style={styles.botaoTexto}>Registrar doação</Text>
-                        </TouchableOpacity>
                     </View>
                 }
             />
+            <TouchableOpacity
+                accessibilityLabel="Adicionar doação"
+                accessibilityRole="button"
+                accessibilityHint="Abre o formulário para registrar uma doação"
+                style={styles.botaoFlutuante}
+                onPress={() => navigation.navigate('TelaCadastroDoacao')}
+            >
+                <Text style={styles.botaoFlutuanteTexto}>+</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -47,13 +50,26 @@ const styles = StyleSheet.create({
     listaVazia: {flexGrow: 1, padding: spacing.lg},
     vazio: {flex: 1, alignItems: 'center', justifyContent: 'center'},
     mensagem: {fontSize: 16, color: colors.text, textAlign: 'center', marginBottom: spacing.lg},
-    botao: {
+    botaoFlutuante: {
+        position: 'absolute',
+        right: spacing.lg,
+        bottom: spacing.lg,
+        width: 58,
+        height: 58,
+        borderRadius: 29,
         backgroundColor: colors.primary,
-        borderRadius: spacing.sm,
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 44,
-        paddingHorizontal: spacing.lg,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 3},
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
     },
-    botaoTexto: {color: colors.surface, fontWeight: '600'},
+    botaoFlutuanteTexto: {
+        color: colors.surface,
+        fontSize: 32,
+        fontWeight: '300',
+        lineHeight: 34,
+    },
 });
