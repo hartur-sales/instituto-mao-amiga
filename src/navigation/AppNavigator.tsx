@@ -70,14 +70,8 @@ export default function AppNavigator({
                 </Stack.Screen>
                 <Stack.Screen
                     name="TelaCadastroDoacao"
-                    options={({navigation, route}) => ({
+                    options={({route}) => ({
                         title: route.params?.doacao ? 'Editar Doação' : 'Cadastro de Doação',
-                        headerRight: () => (
-                            <HeaderButton
-                                title="Doações"
-                                onPress={() => navigation.navigate('TelaHistoricoDoacoes')}
-                            />
-                        ),
                     })}
                 >
                     {(props) => (
