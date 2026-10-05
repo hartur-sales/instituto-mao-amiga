@@ -21,11 +21,14 @@ export default function HeaderButton({title, onPress}: Props) {
 
 const styles = StyleSheet.create({
     button: {
+        alignItems: 'center',
         backgroundColor: colors.surface,
         borderRadius: 6,
+        justifyContent: 'center',
         marginRight: 12,
+        minHeight: 44,
         paddingHorizontal: 10,
-        paddingVertical: 6,
+        paddingVertical: 8,
     },
     pressed: {opacity: 0.75},
     text: {color: colors.primary, fontSize: 14, fontWeight: '600'},

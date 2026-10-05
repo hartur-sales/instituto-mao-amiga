@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         color: colors.text,
         margin: spacing.lg,
+        minHeight: 44,
         paddingHorizontal: spacing.md,
         paddingVertical: 10,
     },

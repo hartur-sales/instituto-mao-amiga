@@ -75,7 +75,11 @@ export default function TelaCadastroDoacao({
                         <TextInput style={styles.input} placeholder="Ex: 5" value={quantidade} onChangeText={(valor) => setQuantidade(valor.replace(/[^0-9]/g, ''))} keyboardType="number-pad"/>
                         <Text style={styles.rotulo}>Ponto de destino</Text>
                         <View style={styles.pickerContainer}>
-                            <Picker selectedValue={pontoDestinoId} onValueChange={setPontoDestinoId}>
+                            <Picker
+                                style={styles.picker}
+                                selectedValue={pontoDestinoId}
+                                onValueChange={setPontoDestinoId}
+                            >
                                 <Picker.Item label="Selecione um ponto..." value=""/>
                                 {pontos.map((ponto) => <Picker.Item key={ponto.id} label={ponto.nome} value={ponto.id.toString()}/>)}
                             </Picker>
@@ -108,8 +112,9 @@ const styles = StyleSheet.create({
     lista: {padding: spacing.lg, paddingBottom: 32},
     formulario: {marginBottom: spacing.lg, gap: 6},
     rotulo: {fontSize: 13, fontWeight: '600', color: colors.text, marginTop: 6},
-    input: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: 10, color: colors.text},
-    pickerContainer: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, overflow: 'hidden'},
+    input: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, minHeight: 44, paddingHorizontal: spacing.md, paddingVertical: 10, color: colors.text},
+    pickerContainer: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, minHeight: 44, overflow: 'hidden'},
+    picker: {color: colors.text, height: 44},
     erro: {color: colors.error, fontSize: 13},
     botao: {backgroundColor: colors.primary, borderRadius: spacing.sm, alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm},
     botaoTexto: {color: colors.surface, fontWeight: '600'},
