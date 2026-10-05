@@ -14,7 +14,7 @@ import {colors} from '../theme';
 export type RootStackParamList = {
     TelaListaPontos: undefined;
     TelaDetalhePonto: {pontoId: number};
-    TelaCadastroDoacao: undefined;
+    TelaCadastroDoacao: {doacao?: Doacao} | undefined;
     TelaDetalheDoacao: {doacao: Doacao};
     TelaHistoricoDoacoes: undefined;
 };
@@ -24,6 +24,7 @@ type Props = {
     doacoes: Doacao[];
     onAdicionarPonto: (ponto: Ponto) => void;
     onAdicionarDoacao: (doacao: NovaDoacao) => void;
+    onEditarDoacao: (doacao: Doacao) => Promise<Doacao[]>;
     onRemoverDoacao: (id: number) => void;
 };
 
@@ -34,6 +35,7 @@ export default function AppNavigator({
     doacoes,
     onAdicionarPonto,
     onAdicionarDoacao,
+    onEditarDoacao,
     onRemoverDoacao,
 }: Props) {
     return (
@@ -68,8 +70,8 @@ export default function AppNavigator({
                 </Stack.Screen>
                 <Stack.Screen
                     name="TelaCadastroDoacao"
-                    options={({navigation}) => ({
-                        title: 'Cadastro de Doação',
+                    options={({navigation, route}) => ({
+                        title: route.params?.doacao ? 'Editar Doação' : 'Cadastro de Doação',
                         headerRight: () => (
                             <HeaderButton
                                 title="Doações"
@@ -84,6 +86,7 @@ export default function AppNavigator({
                             pontos={pontos}
                             doacoes={doacoes}
                             onAdicionarDoacao={onAdicionarDoacao}
+                            onEditarDoacao={onEditarDoacao}
                         />
                     )}
                 </Stack.Screen>

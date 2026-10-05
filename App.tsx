@@ -4,7 +4,7 @@ import AppNavigator from './src/navigation/AppNavigator';
 import {useAppData} from './src/hooks/useAppData';
 
 export default function App() {
-    const {pontos, doacoes, adicionarPonto, adicionarDoacao, removerDoacao} = useAppData();
+    const {pontos, doacoes, adicionarPonto, adicionarDoacao, editarDoacao, removerDoacao} = useAppData();
 
     return (
         <>
@@ -14,6 +14,7 @@ export default function App() {
                 doacoes={doacoes}
                 onAdicionarPonto={adicionarPonto}
                 onAdicionarDoacao={adicionarDoacao}
+                onEditarDoacao={editarDoacao}
                 onRemoverDoacao={removerDoacao}
             />
         </>
