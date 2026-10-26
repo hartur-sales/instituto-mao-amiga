@@ -36,6 +36,7 @@ novamente no mesmo aparelho.
 
 - Node.js instalado
 - npm instalado
+- Java na mesma versão já configurada em `backend/pom.xml`
 - Emulador Android, simulador iOS, dispositivo físico ou navegador
 
 ### Instalação
@@ -44,6 +45,16 @@ Na raiz do projeto, instale as dependências:
 
 ```bash
 npm install
+```
+
+Configure a URL da API copiando `.env.example` para `.env`. Use
+`http://10.0.2.2:8080/api/v1` no emulador Android, `localhost` no navegador
+ou simulador iOS, e o IP da máquina quando usar um celular físico.
+
+Em outro terminal, suba o backend:
+
+```bash
+npm run backend
 ```
 
 ### Iniciar o projeto
@@ -66,6 +77,10 @@ Depois, escolha o destino no terminal do Expo:
 | Navegador | `npx expo start --web` |
 | Android | `npm run android` |
 | iOS | `npm run ios` |
+
+O backend expõe os endpoints `/api/v1/pontos` e `/api/v1/doacoes`. O app
+sincroniza os dados com eles e mantém o `AsyncStorage` como fallback quando a
+API estiver temporariamente indisponível.
 
 ## Fluxo de navegação
 

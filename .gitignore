@@ -3,6 +3,14 @@
 # dependencies
 node_modules/
 
+# Maven / Spring Boot
+backend/target/
+backend/data/
+backend/.classpath
+backend/.project
+backend/.settings/
+*.class
+
 # Expo
 .expo/
 dist/
@@ -26,6 +34,7 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 *.log
+hs_err_pid*
 
 # macOS
 .DS_Store
@@ -47,5 +56,10 @@ yarn-error.*
 .idea/
 *.iml
 .vscode/
+
+# local databases
+*.db
+*.mv.db
+*.trace.db
 
 .claude/settings.local.json
