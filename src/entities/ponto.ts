@@ -1,7 +1,10 @@
 export type Ponto = {
-    id: number;
+    id: string;
     nome: string;
     endereco: string;
-    diasHorarios: string;
-    funcionamento: string;
+    bairro: string;
+    horario: string;
+    tipo: 'coleta' | 'distribuição';
 };
+
+export type PontoRequest = Omit<Ponto, 'id'>;
