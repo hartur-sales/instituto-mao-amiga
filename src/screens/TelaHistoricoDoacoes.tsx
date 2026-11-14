@@ -1,144 +1,45 @@
-import React, {useMemo, useState} from 'react';
-import {
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import {ActivityIndicator, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
 import {Doacao} from '../entities/doacao';
-import {Ponto} from '../entities/ponto';
 import DoacaoHistoricoItem from '../components/DoacaoHistoricoItem';
-import ResumoDoacoes, {ResumoDoacao} from '../components/ResumoDoacoes';
+import * as doacoesService from '../services/doacoesService';
 import {colors, spacing} from '../theme';
 
-type Props = {
-    navigation: any;
-    doacoes: Doacao[];
-    pontos: Ponto[];
-};
-
-export default function TelaHistoricoDoacoes({navigation, doacoes, pontos}: Props) {
+export default function TelaHistoricoDoacoes({navigation}: any) {
+    const [doacoes, setDoacoes] = useState<Doacao[]>([]);
     const [busca, setBusca] = useState('');
-    const doacoesFiltradas = useMemo(() => {
-        const termo = busca.trim().toLocaleLowerCase();
-        return doacoes.filter((doacao) => doacao.tipoItem.toLocaleLowerCase().includes(termo));
-    }, [busca, doacoes]);
-    const resumo = useMemo<ResumoDoacao[]>(() => {
-        const porTipo = new Map<string, ResumoDoacao>();
-
-        doacoes.forEach((doacao) => {
-            const tipoItem = doacao.tipoItem.trim();
-            const atual = porTipo.get(tipoItem) ?? {
-                tipoItem,
-                quantidadeTotal: 0,
-                quantidadeDoacoes: 0,
-            };
-
-            porTipo.set(tipoItem, {
-                tipoItem,
-                quantidadeTotal: atual.quantidadeTotal + doacao.quantidade,
-                quantidadeDoacoes: atual.quantidadeDoacoes + 1,
-            });
-        });
-
-        return Array.from(porTipo.values()).sort(
-            (a, b) => b.quantidadeTotal - a.quantidadeTotal || a.tipoItem.localeCompare(b.tipoItem),
-        );
-    }, [doacoes]);
-
-    const nenhumaDoacao = doacoes.length === 0;
-
-    return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.container}
-        >
-            <ResumoDoacoes totalDoacoes={doacoes.length} resumo={resumo} />
-            <TextInput
-                style={styles.busca}
-                placeholder="Buscar por tipo de item"
-                value={busca}
-                onChangeText={setBusca}
-                returnKeyType="search"
-                accessibilityLabel="Filtrar doações por tipo de item"
-            />
-            <FlatList
-                data={doacoesFiltradas}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({item}) => (
-                    <DoacaoHistoricoItem
-                        doacao={item}
-                        nomePonto={pontos.find((ponto) => ponto.id === item.pontoDestinoId)?.nome ?? 'Ponto não encontrado'}
-                        onPress={() => navigation.navigate('TelaDetalheDoacao', {doacao: item})}
-                    />
-                )}
-                contentContainerStyle={doacoesFiltradas.length ? styles.lista : styles.listaVazia}
-                ListEmptyComponent={
-                    <View style={styles.vazio}>
-                        <Text style={styles.mensagem}>
-                            {nenhumaDoacao
-                                ? 'Você ainda não registrou nenhuma doação.'
-                                : `Nenhuma doação encontrada para "${busca}".`}
-                        </Text>
-                    </View>
-                }
-                keyboardShouldPersistTaps="handled"
-                keyboardDismissMode="on-drag"
-            />
-            <TouchableOpacity
-                accessibilityLabel="Adicionar doação"
-                accessibilityRole="button"
-                accessibilityHint="Abre o formulário para registrar uma doação"
-                style={styles.botaoFlutuante}
-                onPress={() => navigation.navigate('TelaCadastroDoacao')}
-            >
-                <Text style={styles.botaoFlutuanteTexto}>+</Text>
-            </TouchableOpacity>
-        </KeyboardAvoidingView>
-    );
+    const [pagina, setPagina] = useState(0);
+    const [ultima, setUltima] = useState(false);
+    const [carregando, setCarregando] = useState(true);
+    const [carregandoMais, setCarregandoMais] = useState(false);
+    const [erro, setErro] = useState('');
+    const carregar = useCallback(async (filtro: string, page: number, substituir: boolean) => {
+        if (page === 0) setCarregando(true); else setCarregandoMais(true);
+        try {
+            const resposta = await doacoesService.listarPagina(filtro, page);
+            setDoacoes((atuais) => substituir ? resposta.content : [...atuais, ...resposta.content]);
+            setPagina(page); setUltima(resposta.page.last); setErro('');
+        } catch (e) { setErro(e instanceof Error ? `Não foi possível carregar as doações: ${e.message}` : 'Não foi possível carregar as doações.'); }
+        finally { setCarregando(false); setCarregandoMais(false); }
+    }, []);
+    useFocusEffect(useCallback(() => { carregar(busca, 0, true); }, [busca, carregar]));
+    function buscar(texto: string) { setBusca(texto); }
+    return <View style={styles.container}>
+        <TextInput style={styles.busca} placeholder="Buscar por tipo de item" value={busca} onChangeText={buscar}/>
+        {carregando ? <ActivityIndicator/> : erro ? <Text style={styles.erro}>{erro}</Text> : <FlatList data={doacoes} keyExtractor={(item) => item.id}
+            onEndReached={() => {if (!ultima && !carregandoMais) carregar(busca, pagina + 1, false);}} onEndReachedThreshold={0.5}
+            ListEmptyComponent={<Text style={styles.vazio}>Nenhuma doação encontrada.</Text>}
+            renderItem={({item}) => <DoacaoHistoricoItem doacao={item} nomePonto={item.pontoDestino} onPress={() => navigation.navigate('TelaDetalheDoacao', {doacaoId: item.id})}/>}
+            contentContainerStyle={styles.lista}/>}
+        <TouchableOpacity style={styles.adicionar} onPress={() => navigation.navigate('TelaCadastroDoacao')}><Text style={styles.adicionarTexto}>+</Text></TouchableOpacity>
+    </View>;
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1, backgroundColor: colors.background},
-    busca: {
-        backgroundColor: colors.surface,
-        borderColor: colors.border,
-        borderRadius: spacing.sm,
-        borderWidth: 1,
-        color: colors.text,
-        margin: spacing.lg,
-        minHeight: 44,
-        paddingHorizontal: spacing.md,
-        paddingVertical: 10,
-    },
-    lista: {paddingHorizontal: spacing.lg, paddingBottom: 104},
-    listaVazia: {flexGrow: 1, padding: spacing.lg, paddingBottom: 104},
-    vazio: {flex: 1, alignItems: 'center', justifyContent: 'center'},
-    mensagem: {fontSize: 16, color: colors.text, textAlign: 'center', marginBottom: spacing.lg},
-    botaoFlutuante: {
-        position: 'absolute',
-        right: spacing.lg,
-        bottom: spacing.lg,
-        width: 58,
-        height: 58,
-        borderRadius: 29,
-        backgroundColor: colors.primary,
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 3},
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-    },
-    botaoFlutuanteTexto: {
-        color: colors.surface,
-        fontSize: 32,
-        fontWeight: '300',
-        lineHeight: 34,
-    },
+    busca: {margin: spacing.lg, minHeight: 44, paddingHorizontal: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm},
+    erro: {padding: spacing.lg, color: colors.error}, vazio: {padding: spacing.lg, textAlign: 'center'}, lista: {paddingHorizontal: spacing.lg, paddingBottom: 100},
+    adicionar: {position: 'absolute', right: spacing.lg, bottom: spacing.lg, width: 58, height: 58, borderRadius: 29, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center'},
+    adicionarTexto: {color: colors.surface, fontSize: 32},
 });

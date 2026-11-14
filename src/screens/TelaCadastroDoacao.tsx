@@ -1,123 +1,53 @@
-import React, {useState} from 'react';
-import {FlatList, Keyboard, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
-import {Doacao, NovaDoacao} from '../entities/doacao';
+import React, {useEffect, useState} from 'react';
+import {ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native';
+import {Doacao, DoacaoRequest} from '../entities/doacao';
 import {Ponto} from '../entities/ponto';
-import {DoacaoCard} from '../components/DoacaoCard';
+import * as doacoesService from '../services/doacoesService';
+import * as pontosService from '../services/pontosService';
 import {colors, spacing} from '../theme';
 
-type Props = {
-    navigation: any;
-    route: {params?: {doacao?: Doacao}};
-    pontos: Ponto[];
-    doacoes: Doacao[];
-    onAdicionarDoacao: (doacao: NovaDoacao) => void;
-    onEditarDoacao: (doacao: Doacao) => Promise<Doacao[]>;
-};
-
-export default function TelaCadastroDoacao({
-    navigation,
-    route,
-    pontos,
-    doacoes,
-    onAdicionarDoacao,
-    onEditarDoacao,
-}: Props) {
-    const doacaoEmEdicao = route.params?.doacao;
-    const editando = !!doacaoEmEdicao;
-    const [tipoItem, setTipoItem] = useState(doacaoEmEdicao?.tipoItem ?? '');
-    const [quantidade, setQuantidade] = useState(doacaoEmEdicao?.quantidade.toString() ?? '');
-    const [pontoDestinoId, setPontoDestinoId] = useState(doacaoEmEdicao?.pontoDestinoId.toString() ?? '');
+export default function TelaCadastroDoacao({navigation, route}: any) {
+    const id = route.params?.doacaoId as string | undefined;
+    const [pontos, setPontos] = useState<Ponto[]>([]);
+    const [doacao, setDoacao] = useState<DoacaoRequest>({tipoItem: '', quantidade: 0, pontoDestino: ''});
     const [erro, setErro] = useState('');
-
-    function validarESalvar() {
-        if (!tipoItem.trim() || !quantidade.trim() || !pontoDestinoId) {
+    useEffect(() => {
+        pontosService.listar(0, 100).then((resposta) => setPontos(resposta.content)).catch((e) => setErro(e.message));
+        if (id) doacoesService.buscarPorId(id).then(({id: _id, criadoEm: _criado, ...dados}) => setDoacao(dados)).catch((e) => setErro(e.message));
+    }, [id]);
+    async function salvar() {
+        if (!doacao.tipoItem.trim() || !doacao.pontoDestino || !Number.isInteger(doacao.quantidade) || doacao.quantidade <= 0) {
             setErro('Preencha o tipo, a quantidade e o ponto de destino.');
             return;
         }
-        const quantidadeNumerica = Number(quantidade);
-        if (!Number.isInteger(quantidadeNumerica) || quantidadeNumerica <= 0) {
-            setErro('A quantidade deve ser um número inteiro maior que zero.');
-            return;
-        }
-        const dados = {
-            tipoItem: tipoItem.trim(),
-            quantidade: quantidadeNumerica,
-            pontoDestinoId: Number(pontoDestinoId),
-        };
-        if (doacaoEmEdicao) {
-            onEditarDoacao({...doacaoEmEdicao, ...dados}).then((doacoesAtualizadas) => {
-                const doacaoAtualizada = doacoesAtualizadas.find((doacao) => doacao.id === doacaoEmEdicao.id);
-                if (doacaoAtualizada) {
-                    navigation.navigate('TelaDetalheDoacao', {doacao: doacaoAtualizada});
-                }
-            });
-        } else {
-            onAdicionarDoacao(dados);
-            setTipoItem('');
-            setQuantidade('');
-            setPontoDestinoId('');
-        }
-        setErro('');
-        Keyboard.dismiss();
+        try {
+            if (id) await doacoesService.editar(id, doacao); else await doacoesService.cadastrar(doacao);
+            navigation.goBack();
+        } catch (e) { setErro(e instanceof Error ? e.message : 'Não foi possível salvar a doação.'); }
     }
-
-    return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.container}>
-            <FlatList
-                data={doacoes}
-                keyExtractor={(item) => item.id.toString()}
-                ListHeaderComponent={
-                    <View style={styles.formulario}>
-                        <Text style={styles.rotulo}>Tipo do item</Text>
-                        <TextInput style={styles.input} placeholder="Ex: Roupas, alimentos, brinquedos..." value={tipoItem} onChangeText={setTipoItem}/>
-                        <Text style={styles.rotulo}>Quantidade</Text>
-                        <TextInput style={styles.input} placeholder="Ex: 5" value={quantidade} onChangeText={(valor) => setQuantidade(valor.replace(/[^0-9]/g, ''))} keyboardType="number-pad"/>
-                        <Text style={styles.rotulo}>Ponto de destino</Text>
-                        <View style={styles.pickerContainer}>
-                            <Picker
-                                style={styles.picker}
-                                selectedValue={pontoDestinoId}
-                                onValueChange={setPontoDestinoId}
-                            >
-                                <Picker.Item label="Selecione um ponto..." value=""/>
-                                {pontos.map((ponto) => <Picker.Item key={ponto.id} label={ponto.nome} value={ponto.id.toString()}/>)}
-                            </Picker>
-                        </View>
-                        {!!erro && <Text style={styles.erro}>{erro}</Text>}
-                        <TouchableOpacity style={styles.botao} onPress={validarESalvar}>
-                            <Text style={styles.botaoTexto}>{editando ? 'Salvar alterações' : 'Registrar doação'}</Text>
-                        </TouchableOpacity>
-                        {editando && (
-                            <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
-                                <Text style={styles.botaoCancelarTexto}>Cancelar</Text>
-                            </TouchableOpacity>
-                        )}
-                    </View>
-                }
-                renderItem={({item}) => (
-                    <DoacaoCard
-                        doacao={item}
-                        nomePonto={pontos.find((ponto) => ponto.id === item.pontoDestinoId)?.nome ?? 'Ponto não encontrado'}
-                    />
-                )}
-                contentContainerStyle={styles.lista}
-            />
-        </KeyboardAvoidingView>
-    );
+    return <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.conteudo}>
+            <TextInput style={styles.input} placeholder="Tipo do item" value={doacao.tipoItem} onChangeText={(valor) => setDoacao({...doacao, tipoItem: valor})}/>
+            <TextInput style={styles.input} placeholder="Quantidade" keyboardType="number-pad" value={doacao.quantidade ? String(doacao.quantidade) : ''} onChangeText={(valor) => setDoacao({...doacao, quantidade: Number(valor.replace(/[^0-9]/g, ''))})}/>
+            <Text style={styles.rotulo}>Ponto de destino</Text>
+            {pontos.map((ponto) => <TouchableOpacity key={ponto.id} style={[styles.ponto, doacao.pontoDestino === ponto.nome && styles.selecionado]} onPress={() => setDoacao({...doacao, pontoDestino: ponto.nome})}><Text>{ponto.nome}</Text></TouchableOpacity>)}
+        </ScrollView>
+        <View style={styles.rodape}>
+            {!!erro && <Text style={styles.erro}>{erro}</Text>}
+            <TouchableOpacity style={styles.botao} onPress={salvar}><Text style={styles.botaoTexto}>{id ? 'Salvar alterações' : 'Registrar doação'}</Text></TouchableOpacity>
+        </View>
+    </View>;
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1, backgroundColor: colors.background},
-    lista: {padding: spacing.lg, paddingBottom: 32},
-    formulario: {marginBottom: spacing.lg, gap: 6},
-    rotulo: {fontSize: 13, fontWeight: '600', color: colors.text, marginTop: 6},
-    input: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, minHeight: 44, paddingHorizontal: spacing.md, paddingVertical: 10, color: colors.text},
-    pickerContainer: {backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm, minHeight: 44, overflow: 'hidden'},
-    picker: {color: colors.text, height: 44},
-    erro: {color: colors.error, fontSize: 13},
-    botao: {backgroundColor: colors.primary, borderRadius: spacing.sm, alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm},
+    conteudo: {padding: spacing.lg, gap: spacing.sm, paddingBottom: spacing.lg},
+    input: {minHeight: 44, paddingHorizontal: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm},
+    rotulo: {fontWeight: '600', marginTop: spacing.sm},
+    ponto: {minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.sm},
+    selecionado: {borderColor: colors.primary, backgroundColor: colors.primaryLight},
+    erro: {color: colors.error},
+    rodape: {padding: spacing.lg, paddingTop: spacing.sm, backgroundColor: colors.background},
+    botao: {minHeight: 44, justifyContent: 'center', alignItems: 'center', marginTop: spacing.sm, backgroundColor: colors.primary, borderRadius: spacing.sm},
     botaoTexto: {color: colors.surface, fontWeight: '600'},
-    botaoCancelar: {alignItems: 'center', justifyContent: 'center', minHeight: 44, marginTop: spacing.sm},
-    botaoCancelarTexto: {color: colors.textSecondary, fontWeight: '600'},
 });
