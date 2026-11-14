@@ -1,85 +1,34 @@
-import React from 'react';
+import React, {useCallback, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
 import {Alert, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import type {RootStackParamList} from '../navigation/AppNavigator';
+import {Doacao} from '../entities/doacao';
+import * as doacoesService from '../services/doacoesService';
 import {colors, spacing} from '../theme';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'TelaDetalheDoacao'> & {
-    nomePonto: string;
-    onExcluir: (id: number) => void;
-};
-
-export default function TelaDetalheDoacao({navigation, route, nomePonto, onExcluir}: Props) {
-    const {doacao} = route.params;
-    const data = new Date(doacao.criadoEm).toLocaleString('pt-BR');
-
-    function confirmarExclusao() {
-        Alert.alert(
-            'Excluir doação',
-            'Tem certeza que deseja excluir esta doação?',
-            [
-                {text: 'Cancelar', style: 'cancel'},
-                {
-                    text: 'Excluir',
-                    style: 'destructive',
-                    onPress: () => {
-                        onExcluir(doacao.id);
-                        navigation.goBack();
-                    },
-                },
-            ],
-        );
-    }
-
-    return (
-        <View style={styles.container}>
-            <View style={styles.card}>
-                <Text style={styles.tipo}>{doacao.tipoItem}</Text>
-                <Text style={styles.campo}>Quantidade: {doacao.quantidade}</Text>
-                <Text style={styles.campo}>Ponto de destino: {nomePonto}</Text>
-                <Text style={styles.campo}>Data: {data}</Text>
-            </View>
-            <TouchableOpacity
-                style={styles.botaoEditar}
-                onPress={() => navigation.navigate('TelaCadastroDoacao', {doacao})}
-            >
-                <Text style={styles.botaoEditarTexto}>Editar doação</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.botaoExcluir} onPress={confirmarExclusao}>
-                <Text style={styles.botaoTexto}>Excluir doação</Text>
-            </TouchableOpacity>
-        </View>
-    );
+export default function TelaDetalheDoacao({navigation, route}: any) {
+    const id = route.params.doacaoId as string;
+    const [doacao, setDoacao] = useState<Doacao | null>(null);
+    const [erro, setErro] = useState('');
+    const carregar = useCallback(() => {
+        setErro('');
+        doacoesService.buscarPorId(id)
+            .then(setDoacao)
+            .catch((e) => setErro(e.message.includes('404') ? 'Doação não encontrada.' : e.message));
+    }, [id]);
+    useFocusEffect(carregar);
+    if (erro) return <View style={styles.container}><Text style={styles.erro}>{erro}</Text></View>;
+    if (!doacao) return <View style={styles.container}><Text>Carregando...</Text></View>;
+    return <View style={styles.container}><View style={styles.card}><Text style={styles.tipo}>{doacao.tipoItem}</Text><Text>Quantidade: {doacao.quantidade}</Text><Text>Ponto de destino: {doacao.pontoDestino}</Text><Text>Data: {new Date(doacao.criadoEm).toLocaleString('pt-BR')}</Text></View>
+        <TouchableOpacity style={styles.editar} onPress={() => navigation.navigate('TelaCadastroDoacao', {doacaoId: id})}><Text style={styles.editarTexto}>Editar doação</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.excluir} onPress={() => Alert.alert('Excluir doação', 'Tem certeza?', [{text: 'Cancelar', style: 'cancel'}, {text: 'Excluir', style: 'destructive', onPress: async () => {try {await doacoesService.excluir(id); navigation.goBack();} catch (e) {setErro(e instanceof Error ? e.message : 'Não foi possível excluir.');}}}])}><Text style={styles.excluirTexto}>Excluir doação</Text></TouchableOpacity>
+    </View>;
 }
 
 const styles = StyleSheet.create({
-    container: {flex: 1, backgroundColor: colors.background, padding: spacing.lg},
-    card: {
-        backgroundColor: colors.surface,
-        borderRadius: spacing.md,
-        padding: spacing.lg,
-        borderWidth: 1,
-        borderColor: colors.border,
-    },
-    tipo: {fontSize: 20, fontWeight: 'bold', color: colors.text, marginBottom: spacing.lg},
-    campo: {fontSize: 16, color: colors.text, marginBottom: spacing.md},
-    botaoExcluir: {
-        backgroundColor: colors.error,
-        borderRadius: spacing.sm,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 44,
-        marginTop: spacing.lg,
-    },
-    botaoTexto: {color: colors.surface, fontWeight: '600'},
-    botaoEditar: {
-        borderColor: colors.primary,
-        borderRadius: spacing.sm,
-        borderWidth: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 44,
-        marginTop: spacing.sm,
-    },
-    botaoEditarTexto: {color: colors.primary, fontWeight: '600'},
+    container: {flex: 1, padding: spacing.lg, gap: spacing.md, backgroundColor: colors.background},
+    card: {padding: spacing.lg, gap: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: spacing.md},
+    tipo: {fontSize: 22, fontWeight: 'bold'}, erro: {color: colors.error, textAlign: 'center', marginTop: spacing.xl},
+    editar: {minHeight: 44, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.primary, borderRadius: spacing.sm},
+    editarTexto: {color: colors.primary, fontWeight: '600'}, excluir: {minHeight: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.error, borderRadius: spacing.sm},
+    excluirTexto: {color: colors.surface, fontWeight: '600'},
 });
