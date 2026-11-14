@@ -7,9 +7,10 @@ export function PontoCard({ponto, onPress}: {ponto: Ponto; onPress: () => void})
         <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={onPress}>
             <Text style={styles.nome}>{ponto.nome}</Text>
             <Text style={styles.endereco}>{ponto.endereco}</Text>
-            <Text style={styles.diasHorarios}>{ponto.diasHorarios}</Text>
+            <Text style={styles.endereco}>{ponto.bairro}</Text>
+            <Text style={styles.diasHorarios}>{ponto.horario}</Text>
             <View style={styles.tag}>
-                <Text style={styles.funcionamento}>{ponto.funcionamento}</Text>
+                <Text style={styles.funcionamento}>{ponto.tipo}</Text>
             </View>
         </TouchableOpacity>
     );

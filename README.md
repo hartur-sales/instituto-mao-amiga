@@ -1,266 +1,135 @@
-# Instituto Mão Amiga
+# Instituto Mão Amiga - Projeto N2
 
-Aplicativo mobile para apoiar o Instituto Mão Amiga no cadastro de pontos de
-coleta e no controle das doações recebidas.
-
-O app permite registrar doações, consultar o histórico salvo no aparelho,
-filtrar os registros por tipo de item, visualizar um resumo dos totais, editar
-informações cadastradas e excluir registros com confirmação.
-
-## Visão geral
-
-| Área | O que é possível fazer |
-| --- | --- |
-| **Pontos de Coleta** | Cadastrar pontos e consultar seus detalhes |
-| **Cadastro de Doação** | Informar tipo, quantidade e ponto de destino |
-| **Doações** | Visualizar, filtrar e resumir as doações registradas |
-| **Detalhe da Doação** | Consultar, editar ou excluir uma doação |
-
-As doações e os pontos são persistidos localmente com `AsyncStorage`. Por isso,
-os registros continuam disponíveis depois que o aplicativo é fechado e aberto
-novamente no mesmo aparelho.
-
-## Tecnologias
-
-- React Native
-- Expo SDK 57
-- TypeScript
-- React Navigation Native Stack
-- AsyncStorage
-- `@react-native-picker/picker`
-- React Native Web
+Aplicativo Expo/React Native que consome a API Spring Boot em `backend/`.
+Pontos de coleta e doações são persistidos no servidor; somente os IDs dos
+pontos favoritos ficam no `AsyncStorage`.
 
 ## Como executar
 
-### Pré-requisitos
-
-- Node.js instalado
-- npm instalado
-- Java na mesma versão já configurada em `backend/pom.xml`
-- Emulador Android, simulador iOS, dispositivo físico ou navegador
-
-### Instalação
-
-Na raiz do projeto, instale as dependências:
+Requisitos: Node.js/npm e Java 25 (versão definida em `backend/pom.xml`).
 
 ```bash
 npm install
-```
-
-Configure a URL da API copiando `.env.example` para `.env`. Use
-`http://10.0.2.2:8080/api/v1` no emulador Android, `localhost` no navegador
-ou simulador iOS, e o IP da máquina quando usar um celular físico.
-
-Em outro terminal, suba o backend:
-
-```bash
+cp .env.example .env
 npm run backend
-```
-
-### Iniciar o projeto
-
-```bash
 npx expo start
 ```
 
-Se a conexão local não funcionar no dispositivo ou na rede atual, use o modo
-túnel:
+No `.env`, use `http://localhost:8080/api/v1` no navegador/iOS,
+`http://10.0.2.2:8080/api/v1` no emulador Android ou
+`http://IP_DO_COMPUTADOR:8080/api/v1` em um celular na mesma rede. A API fica
+em `http://localhost:8080`.
 
-```bash
-npx expo start --tunnel
-```
+Para testar no celular físico, o computador e o celular precisam estar na mesma
+rede Wi-Fi e a porta `8080` precisa estar acessível. O IP usado pelo app é
+alterado somente em `.env`, na variável `EXPO_PUBLIC_API_URL`.
 
-Depois, escolha o destino no terminal do Expo:
+## API
 
-| Destino | Comando |
-| --- | --- |
-| Navegador | `npx expo start --web` |
-| Android | `npm run android` |
-| iOS | `npm run ios` |
+Swagger: `http://localhost:8080/swagger-ui/index.html`
 
-O backend expõe os endpoints `/api/v1/pontos` e `/api/v1/doacoes`. O app
-sincroniza os dados com eles e mantém o `AsyncStorage` como fallback quando a
-API estiver temporariamente indisponível.
+Pontos:
 
-## Fluxo de navegação
+- `GET /api/v1/pontos/filtro?filtro=&page=0&size=10`
+- `GET /api/v1/pontos/{id}`
+- `POST /api/v1/pontos`
+- `PUT /api/v1/pontos/{id}`
+- `DELETE /api/v1/pontos/{id}`
 
-O fluxo principal do aplicativo é:
+O cadastro de ponto usa `nome`, `endereco`, `bairro`, `horario` e `tipo`
+(`coleta` ou `distribuição`). A busca filtra por nome ou bairro e retorna
+`content` e `page`.
 
-```text
-Pontos de Coleta
-      │
-      ├── botão + ──> Cadastro de Doação
-      │
-      └── botão Doações ──> Histórico de Doações
-                              │
-                              ├── busca por tipo
-                              ├── botão + ──> Cadastro de Doação
-                              └── toque em um item ──> Detalhe da Doação
-                                                           │
-                                                           ├── Editar
-                                                           └── Excluir
-```
+Doações:
 
-As telas principais possuem acesso direto entre **Pontos de Coleta** e
-**Doações**. O cadastro, o detalhe e a edição são fluxos temporários e usam o
-botão nativo de voltar para retornar à tela anterior.
+- `GET /api/v1/doacoes/filtro?filtro=&page=0&size=10`
+- `GET /api/v1/doacoes/{id}`
+- `POST /api/v1/doacoes`
+- `PUT /api/v1/doacoes/{id}`
+- `DELETE /api/v1/doacoes/{id}`
 
-## Roteiro de demonstração
+O cadastro usa `tipoItem`, `quantidade` maior que zero e `pontoDestino` com o
+nome do ponto. `criadoEm` é definido pela API e não muda na edição. IDs são
+UUIDs. O banco H2 grava em arquivo em `backend/data/maoamiga`.
 
-O roteiro abaixo foi preparado para uma demonstração de aproximadamente três
-minutos. Para deixar o fluxo mais claro, use valores fáceis de conferir, como
-duas doações do tipo `Roupa` com quantidades diferentes.
-
-### 1. Registrar uma doação
-
-1. Inicie o app na tela **Pontos de Coleta**.
-2. Toque no botão flutuante `+`.
-3. No campo **Tipo do item**, informe `Roupa`.
-4. No campo **Quantidade**, informe `5`.
-5. Em **Ponto de destino**, selecione um ponto de coleta.
-6. Toque em **Registrar doação**.
-7. Repita o cadastro com outra doação do tipo `Roupa`, por exemplo, com
-   quantidade `10`.
-
-**Resultado esperado:** as duas doações são salvas com identificadores
-próprios e aparecem no histórico quando ele for aberto.
-
-### 2. Abrir o histórico e mostrar o resumo
-
-1. Na tela de pontos, toque em **Doações**, no cabeçalho.
-2. Mostre o cartão **Resumo de doações**.
-3. Destaque o total de doações e o agrupamento:
-
-   ```text
-   Roupa: 15 unidades em 2 doações
-   ```
-
-4. Mostre que cada item apresenta tipo, quantidade, ponto de destino e data.
-
-**Resultado esperado:** o resumo é ordenado pela maior quantidade total e
-reflete o conteúdo atual do histórico.
-
-### 3. Filtrar por tipo de item
-
-1. Toque no campo **Buscar por tipo de item**.
-2. Digite `roup`.
-3. Mostre que apenas os registros cujo tipo contém esse texto continuam na
-   lista, sem diferença entre letras maiúsculas e minúsculas.
-4. Apague o texto digitado.
-
-**Resultado esperado:** ao limpar a busca, todas as doações voltam a aparecer.
-Se for digitado um termo sem correspondência, a tela informa o texto buscado.
-
-### 4. Editar uma doação
-
-1. Toque em uma doação do histórico.
-2. Na tela **Detalhe da Doação**, confira os valores atuais.
-3. Toque em **Editar doação**.
-4. Confirme que o formulário já está preenchido.
-5. Altere a quantidade de `5` para `8`.
-6. Toque em **Salvar alterações**.
-
-**Resultado esperado:** o detalhe volta a mostrar a quantidade `8`, sem criar
-uma segunda doação. O histórico e o resumo também passam a usar o novo valor.
-
-Para demonstrar o cancelamento, abra a edição novamente, mude um campo e toque
-em **Cancelar**. Os dados originais devem permanecer inalterados.
-
-### 5. Excluir uma doação
-
-1. Na tela de detalhe, toque em **Excluir doação**.
-2. No alerta, escolha **Cancelar** e confirme que a doação continua na tela.
-3. Abra o alerta novamente.
-4. Escolha **Excluir**.
-
-**Resultado esperado:** a doação é removida do armazenamento, o app retorna ao
-histórico e o item desaparece sem fechar o aplicativo. O resumo também é
-atualizado.
-
-### 6. Fechar e reabrir o app
-
-1. Cadastre ou mantenha pelo menos uma doação salva.
-2. Feche completamente o app ou a aba do navegador.
-3. Inicie o app novamente.
-4. Abra **Doações**.
-
-**Resultado esperado:** os registros continuam disponíveis, demonstrando que a
-persistência local foi mantida.
-
-## Checklist de acabamento
-
-- [ ] Histórico testado em uma tela estreita e em uma tela larga.
-- [ ] Detalhe testado em uma tela estreita e em uma tela larga.
-- [ ] Edição testada em uma tela estreita e em uma tela larga.
-- [ ] Nenhum texto fica cortado ou sobreposto.
-- [ ] Botões e campos possuem área de toque mínima de 44 px.
-- [ ] Busca e edição continuam visíveis com o teclado aberto.
-- [ ] Cancelar a edição não altera a doação.
-- [ ] Confirmar a exclusão remove o registro sem reiniciar o app.
-- [ ] Reabrir o app mantém os registros salvos.
-
-## Decisões técnicas
-
-### Totais calculados, não persistidos
-
-O resumo é calculado a partir do array atual de doações. Não existe uma
-segunda cópia dos totais no `AsyncStorage`.
-
-Essa decisão evita inconsistências: depois de registrar, editar ou excluir
-uma doação, o resumo é recalculado automaticamente a partir da fonte de
-verdade atual.
-
-### Acesso ao armazenamento centralizado
-
-As operações de persistência ficam em `src/services/doacoesStorage.ts` e
-`src/services/pontosStorage.ts`. As telas não manipulam diretamente o
-`AsyncStorage`; elas recebem dados e callbacks da camada de estado da aplicação.
-
-Isso mantém a interface responsável pela apresentação e concentra as regras de
-leitura, criação, atualização e exclusão em um único lugar.
-
-### Formulário reutilizado
-
-A criação e a edição usam `TelaCadastroDoacao`. Na edição, a doação é enviada
-por `route.params`, os campos são preenchidos e as mesmas validações do
-cadastro são executadas. Assim, não há duas implementações diferentes do
-formulário.
-
-## Estrutura principal
+Exemplos de busca:
 
 ```text
-App.tsx
-└── src
-    ├── components
-    │   ├── DoacaoHistoricoItem.tsx
-    │   ├── HeaderButton.tsx
-    │   └── ResumoDoacoes.tsx
-    ├── entities
-    │   ├── doacao.ts
-    │   └── ponto.ts
-    ├── hooks
-    │   └── useAppData.ts
-    ├── navigation
-    │   └── AppNavigator.tsx
-    ├── screens
-    │   ├── TelaCadastroDoacao.tsx
-    │   ├── TelaDetalheDoacao.tsx
-    │   ├── TelaHistoricoDoacoes.tsx
-    │   └── TelaListaPontos.tsx
-    └── services
-        ├── doacoesStorage.ts
-        └── pontosStorage.ts
+/api/v1/pontos/filtro?filtro=&page=0&size=10
+/api/v1/pontos/filtro?filtro=Bueno&page=0&size=10
+/api/v1/pontos/filtro?filtro=&page=1&size=10
 ```
 
-## Escopo atual
+As três respostas têm o formato abaixo; `content` contém os pontos da página
+e `page` informa a paginação:
 
-O aplicativo contempla cadastro, consulta, filtro, resumo, edição e exclusão
-de doações, além do cadastro e consulta de pontos de coleta.
+```json
+{
+  "content": [
+    {
+      "id": "uuid-do-ponto",
+      "nome": "Instituto Recomeçar",
+      "endereco": "Rua 1, 100",
+      "bairro": "Setor Bueno",
+      "horario": "Seg a Sex, 8h às 17h",
+      "tipo": "coleta"
+    }
+  ],
+  "page": {
+    "size": 10,
+    "number": 0,
+    "totalElements": 25,
+    "totalPages": 3
+  }
+}
+```
 
-Não fazem parte deste escopo:
+O filtro por bairro usa comparação sem diferenciar maiúsculas e minúsculas.
+Para mudar a ordenação, por exemplo, use
+`/api/v1/pontos/filtro?filtro=&page=0&size=10&sort=bairro,asc`.
 
-- histórico de alterações;
-- filtros combinados por data ou ponto de destino;
-- gráficos;
-- edição ou exclusão de pontos;
-- detalhes adicionais não presentes na entidade de doação.
+Para doações, o filtro padrão ordena pela data de cadastro, da mais nova para a
+mais antiga:
+
+```text
+/api/v1/doacoes/filtro?filtro=&page=0&size=10
+/api/v1/doacoes/filtro?filtro=roupa&page=0&size=10
+/api/v1/doacoes/filtro?filtro=&page=1&size=10
+```
+
+O Swagger permite verificar as respostas de sucesso, validação `400` (campo
+obrigatório vazio ou quantidade inválida) e recurso inexistente `404`.
+
+## Evidências do Swagger
+
+Adicionar ao entregar os prints das operações abaixo, feitos em
+`http://localhost:8080/swagger-ui/index.html`:
+
+- Pontos: `GET` lista, `GET` por ID, `POST`, `PUT`, `DELETE`, uma resposta `400`
+  e uma resposta `404`.
+- Pontos filtrados: chamada sem filtro, filtro por bairro e segunda página.
+- Doações: `GET` filtrado, `GET` por ID, `POST`, `PUT`, `DELETE`, uma resposta
+  `400` e uma resposta `404`.
+
+Os prints devem mostrar a URL/parâmetros enviados e o corpo da resposta.
+
+## Roteiro de demonstração (até 3 minutos)
+
+1. Buscar um ponto por nome/bairro e abrir seu detalhe.
+2. Cadastrar, editar e excluir um ponto.
+3. Favoritar um ponto, abrir **Meus pontos** e mostrar a persistência.
+4. Cadastrar uma doação, editar e excluir pelo histórico.
+5. No Swagger, demonstrar um `400` de validação e um `404` com UUID inexistente.
+
+Decisão técnica: pontos e doações ficam no servidor para serem compartilhados
+entre clientes e terem CRUD via HTTP; favoritos ficam no aparelho porque são
+uma preferência individual do usuário.
+
+## Checklist de aceite
+
+- [ ] Inserir os prints do Swagger nesta documentação.
+- [ ] Testar o app no navegador, emulador ou celular com a URL correta no `.env`.
+- [ ] Demonstrar busca, cadastro, edição e exclusão de ponto.
+- [ ] Demonstrar favoritos após fechar e reabrir o app.
+- [ ] Demonstrar cadastro, edição e exclusão de doação.
+- [ ] Demonstrar `400` e `404` no Swagger.
