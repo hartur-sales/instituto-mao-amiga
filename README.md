@@ -113,23 +113,10 @@ Adicionar ao entregar os prints das operações abaixo, feitos em
 
 Os prints devem mostrar a URL/parâmetros enviados e o corpo da resposta.
 
-## Roteiro de demonstração (até 3 minutos)
+## Roteiro de demonstração
 
 1. Buscar um ponto por nome/bairro e abrir seu detalhe.
 2. Cadastrar, editar e excluir um ponto.
 3. Favoritar um ponto, abrir **Meus pontos** e mostrar a persistência.
 4. Cadastrar uma doação, editar e excluir pelo histórico.
 5. No Swagger, demonstrar um `400` de validação e um `404` com UUID inexistente.
-
-Decisão técnica: pontos e doações ficam no servidor para serem compartilhados
-entre clientes e terem CRUD via HTTP; favoritos ficam no aparelho porque são
-uma preferência individual do usuário.
-
-## Checklist de aceite
-
-- [ ] Inserir os prints do Swagger nesta documentação.
-- [ ] Testar o app no navegador, emulador ou celular com a URL correta no `.env`.
-- [ ] Demonstrar busca, cadastro, edição e exclusão de ponto.
-- [ ] Demonstrar favoritos após fechar e reabrir o app.
-- [ ] Demonstrar cadastro, edição e exclusão de doação.
-- [ ] Demonstrar `400` e `404` no Swagger.
