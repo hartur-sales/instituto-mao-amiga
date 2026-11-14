@@ -1,9 +1,9 @@
 export type Doacao = {
-    id: number;
-    criadoEm: string;
+    id: string;
     tipoItem: string;
     quantidade: number;
-    pontoDestinoId: number;
+    pontoDestino: string;
+    criadoEm: string;
 };
 
-export type NovaDoacao = Omit<Doacao, 'id' | 'criadoEm'>;
+export type DoacaoRequest = Omit<Doacao, 'id' | 'criadoEm'>;
